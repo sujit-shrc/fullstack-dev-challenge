@@ -6,6 +6,7 @@ import Analytics from './Analytics';
 import AnalyticsIcon from '@mui/icons-material/BarChart';
 import DataIcon from '@mui/icons-material/Dashboard';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const StyledBox = styled(Box)({
   display: 'flex',
@@ -33,9 +34,14 @@ const MainContent = styled(Box)({
 
 const AdminPanel = () => {
   const [selectedTab, setSelectedTab] = useState('analytics');
+  const navigate = useNavigate();
 
+  const deleteCookie = (name: string) => {
+    document.cookie = `${name}=; path=/;`;
+  }
   const handleLogout = () => {
-    // We will add Logout login later
+    deleteCookie('sessionid');
+    navigate('/login');
   };
 
   return (
