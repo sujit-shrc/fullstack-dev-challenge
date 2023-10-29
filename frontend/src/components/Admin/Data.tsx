@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Table, TableContainer, TableHead, TableRow, TableCell, TableBody, Paper, Typography, CircularProgress, styled } from '@mui/material';
+import axiosInstance from '../../axios';
 
 const LoadingContainer = styled('div')({
   display: 'flex',
@@ -15,22 +16,20 @@ interface Student {
   branch: string;
 }
 
-const dummyData: Student[] = [
-  { id: 1, name: 'John Doe', email: 'john@example.com', branch: 'Computer Science' },
-  { id: 2, name: 'Jane Doe', email: 'jane@example.com', branch: 'Electrical Engineering' },
-];
-
 const Data: React.FC = () => {
-  const [students, setStudents] = useState<Student[]>(dummyData);
-  const [loading, setLoading] = useState(false);
+  const [students, setStudents] = useState<Student[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-   
-    setLoading(true);
-    setTimeout(() => {
-      setStudents(dummyData);
-      setLoading(false);
-    }, 1000);
+    axiosInstance.get('/students')
+      .then(response => {
+        setStudents(response.data.students);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+        setLoading(false);
+      });
   }, []);
 
   return (
@@ -40,7 +39,7 @@ const Data: React.FC = () => {
       </Typography>
       {loading ? (
         <LoadingContainer>
-          <CircularProgress />
+          <CircularProgress color='primary' />
         </LoadingContainer>
       ) : (
         <TableContainer component={Paper}>
