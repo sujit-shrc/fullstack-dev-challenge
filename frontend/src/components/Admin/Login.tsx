@@ -1,7 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 import { Button, TextField, Typography, Container, Paper, Grid, IconButton } from '@mui/material';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import { styled } from '@mui/system';
+import {useNavigate} from 'react-router-dom';
+import axiosInstance from '../../axios';
 
 const StyledContainer = styled(Container)({
   display: 'flex',
@@ -32,11 +34,67 @@ const StyledButton = styled(Button)({
 });
 
 const LoginForm: React.FC = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const navigate = useNavigate();
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [error, setError] = useState<string>('');
 
-  const handleLogin = () => {
-    // We will add logic later
+  const getCookie = (name:string) => {
+    const cookies = document.cookie.split(';');
+  
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+  
+      if (cookie.startsWith(name + '=')) {
+        return cookie.substring(name.length + 1);
+      }
+    }
+  
+    return null;
+  };
+
+  useEffect(() => {
+    const checkExistingSession = async () => {
+      
+      const hasSession = getCookie('sessionid');
+      if (hasSession) {
+        try {
+          const response = await axiosInstance.post('/login');
+          if (response.status === 200) {
+            navigate('/admin');
+          }
+        } catch (error) {
+          navigate('/login')
+          console.error('Login error during existing session check:', error);
+        }
+      }
+    };
+
+    checkExistingSession();
+  }, [navigate]);
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+
+    try {
+      const response = await axiosInstance.post('/login', {
+        email,
+        password,
+      });
+      const token = response.data.token;
+      console.log("here is Response: ", response.data)
+  
+      document.cookie = `sessionid=${token}; expires=${new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toUTCString()}; path=/`;
+      
+      if (response.status === 200 && token !== null) {
+        navigate('/admin');
+        window.location.reload();
+      }
+    } catch (error) {
+      navigate('/login');
+      console.error('Login error:', error);
+      setError('Credentials Invalid. Please try again.');
+    }
   };
 
   return (
@@ -58,9 +116,9 @@ const LoginForm: React.FC = () => {
             margin="normal"
             required
             fullWidth
-            label="Username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            label="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
           />
           <TextField
             variant="outlined"
@@ -72,11 +130,16 @@ const LoginForm: React.FC = () => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
+          {error && (
+           <Typography variant="body1" color="error">
+           {error}
+            </Typography>
+          )}
           <StyledButton
             fullWidth
             variant="contained"
             color="primary"
-            onClick={handleLogin}
+            onClick={handleSubmit}
           >
             Login
           </StyledButton>

@@ -1,8 +1,6 @@
-
-import React from 'react';
+import { Typography } from '@mui/material';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
-// Sample data
 const data = [
   { name: 'Student 1', branch: 'Computer Science', course: 'B.Tech' },
   { name: 'Student 2', branch: 'Electrical Engineering', course: 'B.Tech' },
@@ -31,7 +29,9 @@ const Analytics: React.FC = () => {
 
   return (
     <div>
-      <h2>Student Analytics</h2>
+      <Typography variant="h4" gutterBottom>
+        Student Analystics:
+      </Typography>
       <ResponsiveContainer width={700} height={400}>
         <BarChart
           data={chartData}
